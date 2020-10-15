@@ -1,0 +1,501 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct 14 17:20:52 2020
+
+@author: zy
+"""
+
+#Part 1 -- Data format conversion
+#Batch conversion to .nii files
+#Read .nii file using nibabel
+#Directly read .IMA file using pydicom
+#1. First install nibabel, pydicom, dicom2nifti using pip install
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+import nibabel
+import pydicom
+import dicom2nifti
+#2. Convert all dicom files into nii files in every folder
+
+#Get folders list
+data_path = './2.2Demo data/150202_PINNA_JZL_1/FBIP_FMRI_20150202_091620_734000/'
+folders = os.listdir(data_path) 
+
+# Traverse all the folders
+for folder in folders:
+    dicom_folder = data_path + folder
+    nii_folder = data_path + 'nii_'+ folder
+    os.mkdir(nii_folder) #Create folder to store the .nii files
+    dicom2nifti.convert_directory(dicom_folder, nii_folder, compression= False) #Default compression= True
+    print(folder + " has been converted.")
+
+
+print("Conversion finished.")
+#3. Using Nibabel to read .nii files
+t1 = nibabel.load(data_path+'nii_T1_MPRAGE_SAG_1_0ISO_IPAT2_0003/3_t1_mprage_sag_10iso_ipat2.nii').get_fdata() #Dont't forget .get_fdata()
+
+#Rotate and transpose to get sagittal plane 
+t1 = np.rot90(t1) 
+t1 = np.transpose(t1,(0,2,1))
+t1 = np.rot90(t1) 
+print(t1.shape)
+plt.imshow(t1[:,:,100], cmap='gray')
+plt.show()
+
+(256, 256, 192)
+
+
+
+bold = nibabel.load(data_path + 'nii_BOLD_IPAT2_LONGBASELINEC1C3C4_0004/4_bold_ipat2_longbaselinec1c3c4.nii').get_fdata()
+bold = np.rot90(bold)
+print(bold.shape)
+plt.imshow(bold[:,:,25,200], cmap='gray')
+plt.show()
+
+(88, 88, 49, 240)
+
+
+
+#(Alternative) Using pydicom to directly read dicom files
+files = os.listdir(data_path + 'T1_MPRAGE_SAG_1_0ISO_IPAT2_0003/') #Get file list in this folder
+data = []
+data_all = []
+for file in files:
+    data = pydicom.dcmread(data_path + 'T1_MPRAGE_SAG_1_0ISO_IPAT2_0003/' + file)
+    data_all.append(data.pixel_array)
+
+#Convert list to array
+t1_all = np.array(data_all) 
+print(t1_all.shape)
+plt.imshow(t1_all[100,:,:],cmap='gray')
+plt.show()
+
+(192, 256, 256)
+
+
+
+
+
+import matplotlib.pyplot as plt
+import pydicom.uid
+import sys
+from PyQt5 import QtGui
+import os
+import pydicom
+import glob
+from PIL import *
+import matplotlib.pyplot as plt
+from pylab import *
+from tkinter.filedialog import *
+import PIL.Image as Image
+
+
+import numpy as np
+import os
+import pydicom
+import dicom2nifti
+
+
+from matplotlib import pyplot as plt
+import SimpleITK as sitk
+import nibabel as nib
+import numpy as np
+from glob import glob
+from skimage.util import montage as montage2d
+import matplotlib.pyplot as plt
+from nibabel.viewers import OrthoSlicer3D
+from nibabel import nifti1
+import nibabel as nib
+from matplotlib import pylab as plt
+import matplotlib
+import skimage.io as io
+
+import os
+import cv2
+import numpy as np
+
+img1 = nib.load('C:/Users/zy/Desktop/test1.nii')
+img2 = nib.load('C:/Users/zy\Desktop/out1.nii')
+
+img1.shape
+
+
+#python给图像加上mask,并提取mask区域实例
+
+
+
+
+
+
+
+import nibabel as nib
+import numpy as np
+ 
+#index = list(['1','14','4','5','7','70','148'])#一共7张待处理图像
+for i in range (len(index)):
+ #图像位置
+ nii_file = 'C:/Users/zy/Desktop/test/test1.nii'
+ nii_file2 = 'C:/Users/zy/Desktop/test/out1.nii'
+ #载入图像
+ img = nib.load(nii_file).get_fdata()
+ img2 = nib.load(nii_file2).get_fdata()
+ #两幅图像相乘
+ img3 = np.multiply(img,img2)
+ #将矩阵转换为nii
+ array_img = nib.Nifti1Image(img3,None)
+ #保存并导出
+ nib.save(array_img, 'reg_IR'+'.nii')
+ print('img'+index[i]+'Done')
+
+
+
+
+
+
+
+ 
+
+# matplotlib.use('TkAgg')
+# 需要查看的nii文件名文件名.nii或nii.gz
+filename = 'C:/Users/zy/Desktop/test'
+img = nib.load(filename)
+# 打印文件信息
+print(img)
+print(img.dataobj.shape)
+#shape不一定只有三个参数，打印出来看一下
+
+def read_img(path):
+    img = sitk.ReadImage(path)
+    data = sitk.GetArrayFromImage(img)
+    return data
+def show_img(data):
+    for i in range(data.shape[0]):
+        plt.imshow(data[i,:,:], cmap = 'gray')
+        plt.show()
+        temp_file_name= 'C:/Users/zy/Desktop/temp/'+str(i)+'.jpg'
+        plt.savefig(temp_file_name,)
+        plt.close() 
+        
+
+data = read_img(filename)
+
+show_img(data)
+##simpe_itk 读取file
+
+#img=sitk.ReadImage(filename)
+
+#coding:utf-8
+
+def add_mask2image_binary(images_path, masks_path, masked_path):
+# Add binary masks to images
+  for img_item in os.listdir(images_path):
+    print(img_item)
+    img_path = os.path.join(images_path, img_item)
+    img = cv2.imread(img_path)
+    mask_path = os.path.join(masks_path, img_item[:-4]+'.png') # mask是.png格式的，image是.jpg格式的
+    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) # 将彩色mask以二值图像形式读取
+    masked = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask) #将image的相素值和mask像素值相加得到结果
+    cv2.imwrite(os.path.join(masked_path, img_item), masked)
+images_path = '/home/xinan/cat_test/image/'
+masks_path = '/home/xinan/cat_test/catmask/'
+masked_path = '/home/xinan/cat_test/masked/'
+add_mask2image_binary(images_path, masks_path, masked_path)
+
+
+##simpe_itk 写出file nii格式
+sitk.WriteImage(img,'file0.nii')
+
+width, height, queue = img.dataobj.shape
+# 显示3D图像
+OrthoSlicer3D(img.dataobj).show()
+# 计算看需要多少个位置来放切片图
+x = int((queue) ** 0.5) + 1
+num = 1
+# 按照10的步长，切片，显示2D图像
+for i in range(0, queue): 
+    img_arr = img.dataobj[:, :, i]
+    plt.imshow(img_arr, cmap='gray')
+    plt.show()
+
+
+import os
+import numpy as np
+from nibabel.testing import data_path
+import nibabel as nib
+import cv2
+
+
+def convertnii_to_jpg(path, save_path):
+    li = [file for file in os.listdir(path) if file.endswith(".gz")]
+    img_arr = []
+    examples = []
+    for i in range(len(li)):
+        #print(li[i])
+        example = path+li[i]
+        examples.append(example)
+        img = nib.load(example)
+        img_arr.append(img)
+
+    final_img = []
+    for i in range(len(examples)):
+        image = nib.load(examples[i])
+        final_img.append(image)
+
+    data_ = []
+    for i in range(len(final_img)):
+        image_data = image.get_fdata()
+        data_.append(image_data)
+
+    print(data_[0][0].shape)
+    for j in range(len(data_)):
+        for i in range(3):
+            print(i, j, i+j, li[j])
+            cv2.imwrite("{}/image{}.jpg".format(save_path, li[j]+str(i)), data_[j][i])
+
+convertnii_to_jpg(filename, temp_file_name)
+
+
+
+
+
+
+
+
+
+import nibabel as nib
+import imageio
+import os
+import shutil
+
+
+
+
+
+#Modified Codes 
+#source: https://github.com/alexlaurence/NIfTI-Image-Converter
+def convert(inputf):
+    inputfile = inputf
+    outputfile ='C:/Users/zy/Desktop/temp2/'
+
+
+
+    print('Input file is ', inputfile)
+    print('Output folder is ', outputfile)
+
+    # set fn as your 4d nifti file
+    image_array = nib.load(inputfile).get_fdata()
+    print(len(image_array.shape))
+
+    # ask if rotate
+    ask_rotate = 'n'#input('Would you like to rotate the orientation? (y/n) ')
+
+    if ask_rotate.lower() == 'y':
+        ask_rotate_num = int(input('OK. By 90° 180° or 270°? '))
+        if ask_rotate_num == 90 or ask_rotate_num == 180 or ask_rotate_num == 270:
+            print('Got it. Your images will be rotated by {} degrees.'.format(ask_rotate_num))
+        else:
+            print('You must enter a value that is either 90, 180, or 270. Quitting...')
+            sys.exit()
+    elif ask_rotate.lower() == 'n':
+        print('OK, Your images will be converted it as it is.')
+    else:
+        print('You must choose either y or n. Quitting...')
+        sys.exit()
+
+    # if 4D image inputted
+    if len(image_array.shape) == 4:
+        # set 4d array dimension values
+        nx, ny, nz, nw = image_array.shape
+
+        # set destination folder
+        if not os.path.exists(outputfile):
+            os.makedirs(outputfile)
+            print("Created ouput directory: " + outputfile)
+
+        print('Reading NIfTI file...')
+
+        total_volumes = image_array.shape[3]
+        total_slices = image_array.shape[2]
+
+        # iterate through volumes
+        for current_volume in range(0, total_volumes):
+            slice_counter = 0
+            # iterate through slices
+            for current_slice in range(0, total_slices):
+                if (slice_counter % 1) == 0:
+                    # rotate or no rotate
+                    if ask_rotate.lower() == 'y':
+                        if ask_rotate_num == 90 or ask_rotate_num == 180 or ask_rotate_num == 270:
+                            print('Rotating image...')
+                            if ask_rotate_num == 90:
+                                data = numpy.rot90(image_array[:, :, current_slice, current_volume])
+                            elif ask_rotate_num == 180:
+                                data = numpy.rot90(numpy.rot90(image_array[:, :, current_slice, current_volume]))
+                            elif ask_rotate_num == 270:
+                                data = numpy.rot90(numpy.rot90(numpy.rot90(image_array[:, :, current_slice, current_volume])))
+                    elif ask_rotate.lower() == 'n':
+                        data = image_array[:, :, current_slice, current_volume]
+                            
+                    #alternate slices and save as png
+                    print('Saving image...')
+                    image_name = inputfile[:-4] + "_t" + "{:0>3}".format(str(current_volume+1)) + "_z" + "{:0>3}".format(str(current_slice+1))+ ".png"
+                    imageio.imwrite(image_name, data)
+                    print('Saved.')
+
+                    #move images to folder
+                    print('Moving files...')
+                    src = image_name
+                    shutil.move(src, outputfile)
+                    slice_counter += 1
+                    print('Moved.')
+
+        print('Finished converting images')
+
+    # else if 3D image inputted
+    elif len(image_array.shape) == 3:
+        # set 4d array dimension values
+        nx, ny, nz = image_array.shape
+
+        # set destination folder
+        if not os.path.exists(outputfile):
+            os.makedirs(outputfile)
+            print("Created ouput directory: " + outputfile)
+
+        print('Reading NIfTI file...')
+
+        total_slices = image_array.shape[2]
+
+        slice_counter = 0
+        # iterate through slices
+        for current_slice in range(0, total_slices):
+            # alternate slices
+            if (slice_counter % 1) == 0:
+                # rotate or no rotate
+                if ask_rotate.lower() == 'y':
+                    if ask_rotate_num == 90 or ask_rotate_num == 180 or ask_rotate_num == 270:
+                        if ask_rotate_num == 90:
+                            data = numpy.rot90(image_array[:, :, current_slice])
+                        elif ask_rotate_num == 180:
+                            data = numpy.rot90(numpy.rot90(image_array[:, :, current_slice]))
+                        elif ask_rotate_num == 270:
+                            data = numpy.rot90(numpy.rot90(numpy.rot90(image_array[:, :, current_slice])))
+                elif ask_rotate.lower() == 'n':
+                    data = image_array[:, :, current_slice]
+
+                #alternate slices and save as png
+                if (slice_counter % 1) == 0:
+                    print('Saving image...')
+                    image_name = inputfile[:-4] + "_z" + "{:0>3}".format(str(current_slice+1))+ ".png"
+                    imageio.imwrite(image_name, data)
+                    print('Saved.')
+
+                    #move images to folder
+                    print('Moving image...')
+                    src = image_name
+                    shutil.move(src, outputfile)
+                    slice_counter += 1
+                    print('Moved.')
+
+        print('Finished converting images')
+    else:
+        print('Not a 3D or 4D Image. Please try again.')
+
+
+paths =[]
+for root, dirs, files in os.walk("nii_images"):
+    for filename in files:
+        #print(filename)
+        paths.append(filename)
+paths
+
+filename = 'C:/Users/zy/Desktop/test/out1.nii'
+
+paths=filename
+
+#convert(paths)
+#for path in paths:
+    #convert("nii_images/"+path)
+
+def add_mask2image_binary(images_path, masks_path, masked_path):
+# Add binary masks to images
+  for img_item in os.listdir(images_path):
+    print(img_item)
+    img_path = os.path.join(images_path, img_item+'.png')
+    img = cv2.imread(img_path)
+    mask_path = os.path.join(masks_path, img_item+'.png') # mask是.png格式的，image是.jpg格式的
+    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) # 将彩色mask以二值图像形式读取
+    masked = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask) #将image的相素值和mask像素值相加得到结果
+    cv2.imwrite(os.path.join(masked_path, img_item), masked)
+images_path = 'C:/Users/zy/Desktop/temp/test1_z124'
+masks_path = 'C:/Users/zy/Desktop/temp2/out1_z124'
+masked_path = 'C:/Users/zy/Desktop/mask.png'
+add_mask2image_binary(images_path, masks_path, masked_path)
+
+
+
+def add_mask2image_binary(images_path, masks_path, masked_path):
+# Add binary masks to images
+#  for img_item in os.listdir(images_path):
+#    print(img_item)
+    img_path = os.path.join(images_path+'.png')
+    img = cv2.imread(img_path)
+    mask_path = os.path.join(masks_path+'.png') # mask是.png格式的，image是.jpg格式的
+    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) # 将彩色mask以二值图像形式读取
+    masked = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask) #将image的相素值和mask像素值相加得到结果
+    cv2.imwrite(os.path.join(masked_path), masked)
+images_path = 'C:/Users/zy/Desktop/temp/test1_z124'
+masks_path = 'C:/Users/zy/Desktop/temp2/out1_z124'
+masked_path = 'C:/Users/zy/Desktop/mask.png'
+add_mask2image_binary(images_path, masks_path, masked_path)
+
+
+
+def add_mask2image_binary(images_path, masks_path, masked_path):
+# Add binary masks to images
+#  for img_item in os.listdir(images_path):
+#    print(img_item)
+    img_path = os.path.join(images_path)
+    img = cv2.imread(img_path)
+    mask_path = os.path.join(masks_path) # mask是.png格式的，image是.jpg格式的
+    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) # 将彩色mask以二值图像形式读取
+    masked = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask) #将image的相素值和mask像素值相加得到结果
+    cv2.imwrite(os.path.join(masked_path), masked)
+images_path = 'C:/Users/zy/Desktop/image.png'
+masks_path = 'C:/Users/zy/Desktop/mask.png'
+masked_path = 'C:/Users/zy/Desktop/masked.png'
+add_mask2image_binary(images_path, masks_path, masked_path)
+
+
+
+
+
+
+
+
+
+
+
+
+import nibabel as nib
+import numpy as np
+ 
+index = list(['1','14','4','5','7','70','148'])#一共7张待处理图像
+for i in range (len(index)):
+ #图像位置
+ nii_file = '/home/YinXiaolong/1909/MRBrainS18_data/training_corrected_selected/'+index[i]+'/data/reg_IR.nii.gz'
+ nii_file2 = '/home/YinXiaolong/1910/mask_multiple/mask/' +'mask'+ index[i]+ '.nii.gz'
+ #载入图像
+ img = nib.load(nii_file).get_fdata()
+ img2 = nib.load(nii_file2).get_fdata()
+ #两幅图像相乘
+ img3 = np.multiply(img,img2)
+ #将矩阵转换为nii
+ array_img = nib.Nifti1Image(img3,None)
+ #保存并导出
+ nib.save(array_img, 'reg_IR'+'_'+index[i]+'.nii')
+ print('img'+index[i]+'Done')
+
+
+
+
